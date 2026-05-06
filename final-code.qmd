@@ -1,0 +1,357 @@
+---
+title: "Final Project Code - STAT 158"
+author: Group 10 - Clara Reckhorn, Gabriella Rachal, Jocelyne Perez
+format: typst
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+###############
+# Reading in and formatting data
+###############
+
+data <- read_csv("data/data.csv")
+
+data
+
+power_data <- data |>
+  mutate(
+    Y = di,
+    treatment = factor(xi),
+    block = factor(block)
+  ) |>
+  select(treatment, Y, block)
+
+power_data
+```
+
+```{r}
+treatment_map <- data.frame(
+  treatment          = factor(1:8),
+  source_credibility = factor(c("high","high","high","high","low","low","low","low")),
+  color              = factor(c("yes","yes","no","no","yes","yes","no","no")),
+  headline_framing   = factor(c("sensationalist","neutral","sensationalist","neutral",
+                                "sensationalist","neutral","sensationalist","neutral"))
+)
+
+# Joining the power_data back in to match it to treatment conditions so we can do 2^3 factorial design
+power_data_full <- power_data |>
+  left_join(treatment_map, by = "treatment") |>
+  select(source_credibility, color, headline_framing, block, Y)
+
+power_data_full
+```
+
+### Complete Block Design Example
+
+Step 1: Linear Model and Data Generating Process
+
+```{r}
+# political affiliation level is the block
+# each participant sees exactly 1 graph (1 treatment combination)
+
+# source cred: 0 = low, 1 = high
+# color: 0 = no, 1 = yes
+# headline framing: 0 = neutral, 1 = sensationalist
+
+
+dry_run <- data.frame(
+  unit               = 1:16,
+  block              = rep(c("democrat", "republican"), each = 8),
+  source_credibility = rep(c("high", "high", "high", "high",
+                              "low",  "low",  "low",  "low"), 2),
+  color              = rep(c("yes", "yes", "no",  "no",
+                              "yes", "yes", "no",  "no"), 2),
+  headline_framing   = rep(c("sensationalist", "neutral",
+                              "sensationalist", "neutral",
+                              "sensationalist", "neutral",
+                              "sensationalist", "neutral"), 2),
+  response           = c(6, 7, 5, 5, 4, 4, 3, 4,   # democrat block
+                         5, 6, 4, 3, 5, 3, 2, 4)    # republican block
+)
+
+```
+
+```{r}
+# Write out the linear model as an R function
+
+set.seed(42)
+
+generate_Y <- function(mu, alpha, gamma, delta, beta, 
+                       alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                       sigma_sq, j, k, l, i, m) {
+  
+  n <- length(m)
+  
+  epsilon <- rnorm(n, mean = 0, sd = sqrt(sigma_sq))
+  
+  ag  <- mapply(function(jj, kk) alpha_gamma[jj, kk], j, k)
+  ad  <- mapply(function(jj, ll) alpha_delta[jj, ll], j, l)
+  gd  <- mapply(function(kk, ll) gamma_delta[kk, ll], k, l)
+  agd <- mapply(function(jj, kk, ll) alpha_gamma_delta[jj, kk, ll], j, k, l)
+  
+  Y <- mu + beta[i] + alpha[j] + gamma[k] + delta[l] + ag + ad + gd + agd + epsilon
+  
+  return(Y)
+}
+```
+
+Step 2: Choosing params
+
+```{r}
+# Defining parameter values
+
+# Define parameter values
+mu <- 0
+
+
+alpha <- c(-0.55, 0.55)      # source credibility: ~1.5 point difference
+gamma <- c(-0.45, 0.45)      # color: ~0.9 point difference
+delta <- c(-0.55, 0.55)      # headline framing: ~1.1 point difference
+beta  <- c(-0.10, 0.10)      # block   
+
+mu <- mean(power_data_full$Y)
+
+sigma_sq <- var(power_data_full$Y)
+n <- 16
+
+
+alpha_gamma       <- matrix(c(0.15, -0.15, -0.15,  0.15), nrow = 2, ncol = 2)
+alpha_delta       <- matrix(c(0.10, -0.10, -0.10,  0.10), nrow = 2, ncol = 2)
+gamma_delta       <- matrix(c(0.08, -0.08, -0.08,  0.08), nrow = 2, ncol = 2)
+alpha_gamma_delta <- array(c(0.05, -0.05, -0.05,  0.05,
+                             -0.05,  0.05,  0.05, -0.05), dim = c(2, 2, 2))
+```
+
+## Our Estimate for Sigma Squared
+
+```{r}
+sigma_sq
+```
+
+Step 3: Simulating a dataset and Inference
+
+
+```{r}
+n_per_cell <- 3
+i <- as.integer(power_data_full$block)
+j <- as.integer(power_data_full$source_credibility)  # high=1, low=2
+k <- as.integer(power_data_full$color)               # no=1, yes=2
+l <- as.integer(power_data_full$headline_framing)    # neutral=1, sensationalist=2
+m <- 1:nrow(power_data_full)                         # n_total = 50
+
+n_total <- length(m)
+
+Y <- generate_Y(mu, alpha, gamma, delta, beta,
+                alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                sigma_sq, j, k, l, i, m)
+
+dat <- data.frame(
+  Y                  = Y,
+  block              = factor(i),
+  source_credibility = factor(j),
+  color              = factor(k),
+  headline_framing   = factor(l)
+)
+
+fit <- lm(Y ~ source_credibility * color * headline_framing + block, data = dat)
+aov_tab <- anova(fit)
+
+###############
+# ANOVA (Table 2 & 3 in text)
+###############
+
+aov_tab
+```
+
+```{r}
+# Fit linear model
+fit <- lm(Y ~ source_credibility * color * headline_framing + block, data = dat)
+
+# Extract ANOVA table
+aov_tab <- anova(fit)
+
+# Get p-value for source credibility (main effect of interest)
+p_val <- aov_tab["source_credibility", "Pr(>F)"]
+
+# Convert to rejection indicator
+reject <- as.integer(p_val < 0.05)
+reject
+```
+
+Step 4: Iterating to calculate Power
+
+
+```{r}
+one_sim <- function(mu, alpha, gamma, delta, beta,
+                    alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                    sigma_sq, i, j, k, l, m) {
+  
+  Y <- generate_Y(mu, alpha, gamma, delta, beta,
+                  alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                  sigma_sq, j, k, l, i, m)
+  
+  dat <- data.frame(
+    Y                  = Y,
+    block              = factor(i),
+    source_credibility = factor(j),
+    color              = factor(k),
+    headline_framing   = factor(l)
+  )
+  
+  fit <- lm(Y ~ source_credibility * color * headline_framing + block, data = dat)
+  p_val <- anova(fit)["source_credibility", "Pr(>F)"]
+  return(as.integer(p_val < 0.05))
+}
+
+# Run 1000 simulations
+n_sim <- 1000
+results <- replicate(n_sim, one_sim(mu, alpha, gamma, delta, beta,
+                                    alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                                    sigma_sq, i, j, k, l, m))
+power <- mean(results)
+power
+```
+
+```{r}
+# Iterate over Steps 1-3 multiple times: Turn the Monte Carlo crank!
+
+# Number of simulations
+iter <- 1000
+
+# Run simulations
+reject_vec <- replicate(
+  iter,
+  one_sim(mu, alpha, gamma, delta, beta,
+          alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+          sigma_sq, i, j, k, l, m)
+)
+
+# Estimated power
+power_est <- mean(reject_vec)
+
+power_est
+```
+
+```{r}
+library(ggplot2)
+
+# Running Monte Carlo estimate of power
+running_power <- cumsum(reject_vec) / seq_along(reject_vec)
+
+# Put into a data frame for ggplot
+df_power <- data.frame(
+  iter = seq_along(reject_vec),
+  power = running_power
+)
+
+# Convergence plot
+ggplot(df_power, aes(x = iter, y = power)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = mean(reject_vec), linetype = "dashed") +
+  labs(
+    title = "Monte Carlo Power Estimate Convergence",
+    x = "Number of Simulations",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+
+
+```{r}
+# Power as a function of sample size
+
+sample_sizes <- c(1, 2, 5, 10, 20, 30, 50)  # n per cell
+n_sim <- 1000
+
+power_by_n <- sapply(sample_sizes, function(n_per_cell) {
+  
+  # rebuild index vectors for this sample size
+  n_total <- 16 * n_per_cell
+  
+  i <- rep(rep(1:2, each = 8), n_per_cell)
+  j <- rep(rep(c(1,1,1,1,2,2,2,2), 2), n_per_cell)
+  k <- rep(rep(c(1,1,2,2,1,1,2,2), 2), n_per_cell)
+  l <- rep(rep(c(1,2,1,2,1,2,1,2), 2), n_per_cell)
+  m <- 1:n_total
+  
+  results <- replicate(n_sim, one_sim(mu, alpha, gamma, delta, beta,
+                                      alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                                      sigma_sq, i, j, k, l, m))
+  mean(results)
+})
+
+# Plot power curve
+df_n <- data.frame(n_per_cell = sample_sizes, power = power_by_n)
+
+ggplot(df_n, aes(x = n_per_cell * 16, y = power)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "red") +
+  labs(
+    title = "Power vs. Sample Size",
+    x = "Total N",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+
+df_n$total_n <- df_n$n_per_cell * 16
+df_n
+```
+
+With a sample size of 50, we have a power of 0.72.
+
+
+```{r}
+# swap this line for each factor/interaction:
+p_val <- anova(fit)["source_credibility", "Pr(>F)"] # 0.798
+p_val <- anova(fit)["color", "Pr(>F)"] # 0.429
+p_val <- anova(fit)["headline_framing", "Pr(>F)"] # 0.715
+p_val <- anova(fit)["source_credibility:color", "Pr(>F)"] # 0.085
+p_val <- anova(fit)["source_credibility:headline_framing", "Pr(>F)"] # 0.07
+p_val <- anova(fit)["color:headline_framing", "Pr(>F)"] # 0.072
+p_val <- anova(fit)["source_credibility:color:headline_framing", "Pr(>F)"] # 0.053
+```
+
+## Power Curves
+
+```{r}
+one_sim <- function(mu, alpha, gamma, delta, beta,
+                    alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                    sigma_sq, i, j, k, l, m) {
+  
+  Y <- generate_Y(mu, alpha, gamma, delta, beta,
+                  alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                  sigma_sq, j, k, l, i, m)
+  
+  dat <- data.frame(
+    Y                  = Y,
+    block              = factor(i),
+    source_credibility = factor(j),
+    color              = factor(k),
+    headline_framing   = factor(l)
+  )
+  
+  fit <- lm(Y ~ source_credibility * color * headline_framing + block, data = dat)
+  p_val <- anova(fit)["source_credibility:color:headline_framing", "Pr(>F)"]
+  return(as.integer(p_val < 0.05))
+}
+
+# Run 1000 simulations
+n_sim <- 1000
+results <- replicate(n_sim, one_sim(mu, alpha, gamma, delta, beta,
+                                    alpha_gamma, alpha_delta, gamma_delta, alpha_gamma_delta,
+                                    sigma_sq, i, j, k, l, m))
+power <- mean(results)
+power
+```
+
+Based on our calculations, the factors that are statistically significant are (in order from most to least significant): source credibility (p = 0.0006714), headline framing (0.0014075), and color (0.0240717). The block (p = 0.82) and all two-way and three-way interactions are far from significance (all p > 0.25), which suggests that the three factors act independently with no meaningful interaction effects. 
+
+However, for color, our power is only 0.429, which indicates that if a true effect exists, we only have about a 43 percent chance of detecting it. This result should be interpreted cautiously and it would have been mostly uninformative also if it had resulted as as non-significant.
+
+Additionally, our two- and three-way interaction effects do not have a high enough power to be revealing. To increase power for these estimates of the effects, we would need a larger sample size.
