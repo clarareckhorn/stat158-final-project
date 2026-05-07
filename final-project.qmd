@@ -46,21 +46,66 @@ format:
 
 # Introduction
 
+This study examines how contextual features of a data visualization shapes how individuals interpret identical information. This study specifically examines headline framing, source credibility, and graph color. Data visualizations are used to communicate objective facts. Research suggests that presentation context can influence perception and decision making. Our experiment tests whether individuals rely more on the underlying data itself or on the surrounding context when forming judgements. 
+
+For this experiment we designed a randomized blocked factorial experiment where participants were shown the same graph under different combinations of headline framing (sensational vs neutral), source credibility (high vs low), and graph color (color vs black and white). After viewing the visualizations, participants were then asked to evaluate the graph using the Likert scale to measure trust, credibility, and agreement. 
+
+Our results indicate that source credibility and headline framing each had statistically significant effects on participants' trust rating. Source credibility was the strongest predictor. Color also had statistical significance, but with limited power due to our sample size. 
+
+
 # Methodology
+
+The experiment included three independent variables with two levels each. Headline framing consisted of either sensational or neutral headlines. The source credibility was changed by labeling the graph as coming from a highly credible source (The New York Times) or a lower credible source (BuzzFeed). The graph color was changed by presenting the visualization as either in color or black and white. Combining all three factors created eight unique treatment combinations. 
+
+Participants were randomly assigned to one of the eight treatment combinations. Each participant viewed only one of the combinations and completed a short survey using the Likert-scale ranging from 1 to 7. The primary response variable was the participants rating of the graphs trustworthiness and credibility. 
+
+We chose to use a full 23factorial design because it allowed us to estimate main effects of each factor, along with combinations of factors that interact with one another with the same number of runs which makes it most efficient for our smaller sample. This was an appropriate design because our research question focused on how multiple contextual changes simultaneously affect interpretation of identical data. 
+
+The study used blocking factors of political affiliation to reduce variability. The participants were grouped into left-leaning, right-leaning, and middle blocks prior to treatment assignment. Treatments were then randomized within each block using a randomized complete block design. The reason for blocking based on political affiliation was that prior beliefs could influence how participants respond to news-style graphics and also affects how they respond to certain media sources. 
+
+Our final design included 50 participants total. We recruited them via a Google Form. Each participant viewed only one graph version and was not exposed to other treatment conditions. The sample size was chosen by practical recruitment constraints and a Monte Carlo power analysis which estimated a power of approximately 0.78-0.80 for main effects. The sample size was sufficient to estimate main effects, but had substantially lower power for detecting three-way interaction which required a larger size of about 80 or more observations. Early in the data collection process, a navigation error in the form caused users to be redirected to the main page after submission, leading to the loss of the first seven entries that were discarded. 
+
+To reduce demand effects, the participants were not informed about the purpose of the experiment. They were simply instructed to view a graph and answer the questions. This helped minimize bias caused by participants guessing the purpose of the study.  
+
+We faced several limitations to this study. Firstly, the small sample size limited statistical power especially for detecting interaction effects. The study was better powered for detecting main effects rather than subtle interactions. Second, the experiment relied on self reported Likert scale responses which could introduce variability in how participants interpret the scale itself. Finally, although political affiliation was used as a blocking factor, certain variables such as media literacy or trust may also influence how participants interpret the context of a visualization. Future work with larger samples would address these issues.	
 
 # Results
 
+We analyzed the effect of three factors source credibility (high vs. low), color (yes vs. no), and headline framing (sensationalist vs. neutral) on participants' responses, using a randomized complete block design with political affiliation (Democrat vs. Republican) as the blocking factor. The full factorial 2³ design allows estimation of all main effects and interactions, with the linear model taking the form:
+Y = μ + block + source credibility + color + headline framing + all two- and three-way interactions + ε
+
+
+All three factors showed statistically significant main effects. Source credibility was the strongest predictor (p = 0.0007), followed by headline framing (p = 0.0014), and color (p = 0.024). The block effect was not significant (p = 0.82), suggesting that political affiliation did not meaningfully shift baseline responses  a reassuring result indicating the blocking variable did not introduce substantial confounding, though it may still have reduced within-group variance as intended.
+
+
+None of the two-way or three-way interaction terms approached conventional significance thresholds (all p > 0.25). The lines in the interaction plots below are approximately parallel across factor levels and for instance, the gap in mean response between high and low source credibility is similar regardless of whether color is present or absent, and regardless of headline framing. This pattern is consistent with the three factors operating independently and additively, with no meaningful synergistic or antagonistic relationships between them.
+
+
+In sum, the data provide reasonably strong evidence for independent main effects of source credibility, headline framing, and color on participant responses, with no evidence of interaction. However, the modest power for the color effect and low power for interaction terms means the study is better positioned to detect main effects than to characterize the factorial structure in full. Future work with a larger sample roughly 30 or more participants per cell would be better suited to testing whether these factors interact.
+
+
 # Discussion or Conclusion
 
-Based on our calculations, the factors that are statistically significant are (in order from most to least significant): source credibility (p = 0.0006714), headline framing (0.0014075), and color (0.0240717). The block (p = 0.82) and all two-way and three-way interactions are far from significance (all p > 0.25), which suggests that the three factors act independently with no meaningful interaction effects. 
+The results here tell a fairly clean story: all three features we manipulated who presents the information, how the headline is worded, and whether the graphic uses color independently nudge people's responses, and they do so without meaningfully amplifying or dampening each other. That's a tidy finding, even if it leaves some questions open.
+The fact that source credibility came out on top isn't surprising people have always cared about where information comes from, and that instinct shows up clearly in the data. What's more interesting is that headline framing was almost as influential. The way a headline is written appears to carry about as much weight as the credibility of the source behind it, which has real implications for how data visualizations are packaged and presented in practice. Color, while significant, played a smaller role, and given how underpowered that estimate was, we'd want to see it replicated before reading too much into it.
 
-However, for color, our power is only 0.429, which indicates that if a true effect exists, we only have about a 43 percent chance of detecting it. This result should be interpreted cautiously and it would have been mostly uninformative also if it had resulted as as non-significant.
 
-Additionally, our two- and three-way interaction effects do not have a high enough power to be revealing. To increase power for these estimates of the effects, we would need a larger sample size.
+The absence of interactions is worth sitting with for a moment. It's reasonable to expect that a sensationalist headline attached to a low-credibility source would be especially damaging a kind of double red flag or that color might matter more when other trustworthiness signals are weak. But the data don't really support that intuition. Each factor seems to do its own thing, more or less independently. That said, we genuinely didn't have enough power to detect interaction effects of the sizes we'd expect, so "we didn't find interactions" and "interactions don't exist" are very different claims here. The honest read is that we just can't say much either way.
+
+
+The block effect of political affiliation fizzling out is also worth thinking about. It's possible the stimuli simply weren't partisan enough to trigger the kind of differential responding you might expect across party lines. Or it could be that the factors we manipulated tap into fairly basic cognitive processes that don't vary much by political identity. That's an open question, and an interesting one.
+
+
+The most obvious next step is just running the study with more people. Getting to around 30 participants per cell would put us in a much better position enough power to actually test whether those interactions are real, and enough confidence in the color estimate to say something definitive about it. Beyond sample size, it would be worth experimenting with more than two levels of each factor. Both source credibility and headline framing were binary here, and effects that look linear across two points might flatten out or accelerate at more extreme values in ways we can't see with the current design.
+
+
+It would also be interesting to bring in richer blocking variables. Political affiliation was a reasonable starting point, but things like media literacy or general institutional trust might do a better job of capturing who is actually sensitive to these cues and who isn't. And finally, this study treated response as a single outcome, but people might react differently when you ask about perceived accuracy versus emotional response versus whether they'd share something — unpacking that could go a long way toward understanding what source credibility and framing are actually doing under the hood.
 
 # Appendix
 
 ## Use of AI {.appendix}
+
+We used AI to proofread our written discussion and conlusion section and to perform a sanity-check of our code to ensure that the way we did our analysis is effective.
 
 ## Significant Changes Made After Protocol {.appendix}
 
@@ -255,7 +300,7 @@ fit <- lm(Y ~ source_credibility * color * headline_framing + block, data = dat)
 aov_tab <- anova(fit)
 
 ##########
-# ANOVA (Table 2 & 3 in text)
+# ANOVA
 ##########
 
 aov_tab
@@ -464,6 +509,44 @@ results <- replicate(n_sim, one_sim(mu, alpha, gamma, delta, beta,
                                     sigma_sq, i, j, k, l, m))
 power <- mean(results)
 power
+```
+
+```{r}
+##########
+# Interaction Plot
+##########
+
+cell_means <- power_data_full |>
+  group_by(source_credibility, color, headline_framing) |>
+  summarise(mean_Y = mean(Y), .groups = "drop")
+
+# Plot 1: source credibility x color, faceted by headline framing
+ggplot(cell_means, aes(x = source_credibility, y = mean_Y, 
+                       color = color, group = color)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  facet_wrap(~headline_framing, labeller = label_both) +
+  labs(
+    title = "Interaction Plot: Source Credibility × Color",
+    x = "Source Credibility",
+    y = "Mean Response (Y)",
+    color = "Color"
+  ) +
+  theme_minimal()
+
+# Plot 2: source credibility x headline framing, faceted by color
+ggplot(cell_means, aes(x = source_credibility, y = mean_Y,
+                       color = headline_framing, group = headline_framing)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  facet_wrap(~color, labeller = label_both) +
+  labs(
+    title = "Interaction Plot: Source Credibility × Headline Framing",
+    x = "Source Credibility",
+    y = "Mean Response (Y)",
+    color = "Headline Framing"
+  ) +
+  theme_minimal()
 ```
 
 

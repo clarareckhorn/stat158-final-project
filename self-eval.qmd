@@ -1,0 +1,14 @@
+---
+title: "Final Project: Self Evaluation Statement"
+subtitle: "STAT 158"
+author: Clara Reckhorn
+format: typst
+---
+
+For our final project, I feel that my group (group 10) did a fair job of distributing the work. I was responsible for most of the coding (ANOVA table, MC estimate of power, plotting power curves) and transforming the raw data into a format that I could work with. I was also responsible for formatting the report into a quarto-style research report, as well as the AI statement, and the significant changes made after protocol section. 
+
+Jocelyne was responsible for the interaction plots part of the code. She also wrote the discussion and conclusion. 
+
+Gabriella was responsible for writing the introduction, methodology, and the results sections. 
+
+I am satisfied with our work and how it was split up. 
